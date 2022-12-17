@@ -120,6 +120,7 @@ def recipeAdd():
     """
     return render_template('addRecipe.html')  # render the home template
 
+
 @app.route('/recipe/<recipe_id>', methods=['POST', 'GET'])
 def recipeDetail(recipe_id):
     """
@@ -239,3 +240,85 @@ def addRecipe():
 
     db.recipes.insert_one(new_recipe)
     return redirect(url_for('browse'))
+
+
+@app.route('/my-recipes')
+def myRecipes():
+    """
+    Route for the home page
+    """
+    recipes = db.recipes.find({"user": session['username']})
+    # render the home template
+    return render_template('myRecipes.html', recipes=recipes)
+
+
+@app.route('/logout')
+def logout():
+    """
+    Route for the home page
+    """
+    session.pop("username")
+    return render_template('index.html')  # render the home template
+
+
+@app.route('/saved-recipes')
+def savedRecipes():
+    """
+    Route for the saved recipes
+    """
+    currUser = db.users.find({"username": session['username']})
+    savedItems = currUser[0]['saved']
+
+    print(savedItems)
+    for rec in db.recipes.find({}):
+        if (str(rec.get("_id")) in savedItems):
+            # print("found")
+            db.recipes.update_one({"_id": rec.get("_id")},
+                                  {"$set": {"found": "1"}})
+        else:
+            # print("not found")
+            db.recipes.update_one({"_id": rec.get("_id")},
+                                  {"$set": {"found": "0"}})
+
+    return render_template('savedRecipes.html', recipes=db.recipes.find({"found": "1"}))
+
+
+@app.route('/saveRecipe', methods=['GET'])
+def saveNew():
+    if (request.args.get('recipe_id') == ""):
+        print("none")
+        return redirect(url_for("savedRecipes"))
+    else:
+        recipe_id = request.args.get('recipe_id')
+        currUser = db.users.find({"username": session['username']})
+        savedItems = currUser[0]['saved']
+        
+        if (str(recipe_id) not in savedItems):
+            savedItems.append(recipe_id)
+        else:
+            savedItems.remove(recipe_id)
+
+        db.users.update_one({"username": session['username']},
+                            {"$set": {'saved': savedItems}})
+
+        print(savedItems)
+        for rec in db.recipes.find({}):
+            if (str(rec.get("_id")) in savedItems):
+                # print("found")
+                db.recipes.update_one({"_id": rec.get("_id")},
+                                      {"$set": {"found": "1"}})
+            else:
+                # print("not found")
+                db.recipes.update_one({"_id": rec.get("_id")},
+                                      {"$set": {"found": "0"}})
+
+        return render_template('savedRecipes.html', recipes=db.recipes.find({"found": "1"}))
+
+
+app.secret_key = 'some key that you will never guess'
+if __name__ == "__main__":
+    # use the PORT environment variable, or default to 5000
+    PORT = os.getenv('PORT', 5000)
+    # import logging
+    # logging.basicConfig(filename='/home/ak8257/error.log',level=logging.DEBUG)
+    app.run(port=PORT)
