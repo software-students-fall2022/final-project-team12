@@ -119,3 +119,123 @@ def recipeAdd():
     Route for the home page
     """
     return render_template('addRecipe.html')  # render the home template
+
+@app.route('/recipe/<recipe_id>', methods=['POST', 'GET'])
+def recipeDetail(recipe_id):
+    """
+    Route for GET requests to the edit page.
+    Displays a form users can fill out to edit an existing record.
+    """
+    user =  db.users.find_one({'username': session["username"]})
+    user_saved = user["saved"]
+    if (recipe_id in user_saved):
+        isSaved = True
+    else:
+        isSaved = False
+    
+    # render the edit template
+    
+    if request.method == 'POST':
+        newcomment = request.form['description']
+        temp = db.recipes.find({"_id":ObjectId(recipe_id)})[0]
+        comments = temp['comments']
+        comments.append({"username":session["username"], "comment":newcomment})
+        db.recipes.update_one({"_id":ObjectId(recipe_id)},
+                              {'$set':{"comments":comments}})
+    recipe = db.recipes.find_one({"_id": ObjectId(recipe_id)})
+    return render_template('recipe-detail.html', r=recipe, isSaved=isSaved)
+
+
+@app.route('/recipe/<recipe_id>/edit')
+def recipeEdit(recipe_id):
+    """
+    Route for GET requests to the edit page.
+    Displays a form users can fill out to edit an existing record.
+    """
+    recipe = db.recipes.find_one({"_id": ObjectId(recipe_id)})
+    return render_template('editRecipe.html', recipe=recipe)
+
+
+@app.route('/recipe/<recipe_id>/edit', methods=['POST'])
+def EditRecipe(recipe_id):
+    photo = request.files['image']
+    filename = photo.filename
+    title = request.form["title"]
+    estimatedTime = request.form["estimatedTime"]
+    numServings = request.form["numServings"]
+    estimatedCost = request.form["estimatedCost"]
+    difficultyLevel = request.form["difficultyLevel"]
+    cuisine = request.form["cuisine"]
+    description = request.form["description"]
+    ingredients = request.form["ingredients"]
+    instructions = request.form["instructions"]
+    nameOfUser = session['username']
+    old = db.recipes.find({"_id":ObjectId(recipe_id)})[0]
+    updated_recipe = {
+        "user": nameOfUser,
+        "title": title,
+        "estimatedTime": estimatedTime,
+        "numServings": numServings,
+        "estimatedCost": estimatedCost,
+        "difficultyLevel": difficultyLevel,
+        "cuisine": cuisine,
+        "description": description,
+        "ingredients": ingredients,
+        "instructions": instructions,
+        "comments": old['comments']
+    }
+
+    if filename != "":
+        updated_recipe["image"] = filename
+        photo.save('./static/images/'+filename)
+
+    db.recipes.update_one(
+        {"_id": ObjectId(recipe_id)},  # match criteria
+        {"$set": updated_recipe}
+    )
+
+    return redirect(url_for('myRecipes'))
+
+
+@app.route('/recipe/<recipe_id>/delete')
+def recipeDelete(recipe_id):
+    """
+    Route for GET requests to the edit page.
+    Displays a form users can fill out to edit an existing record.
+    """
+    db.recipes.delete_one({"_id": ObjectId(recipe_id)})
+    return redirect(url_for('myRecipes'))
+
+
+@app.route('/recipe-add', methods=['POST'])
+def addRecipe():
+    photo = request.files['image']
+    filename = photo.filename
+    photo.save('./static/images/'+filename)
+    title = request.form["title"]
+    estimatedTime = request.form["estimatedTime"]
+    numServings = request.form["numServings"]
+    estimatedCost = request.form["estimatedCost"]
+    difficultyLevel = request.form["difficultyLevel"]
+    cuisine = request.form["cuisine"]
+    description = request.form["description"]
+    ingredients = request.form["ingredients"]
+    instructions = request.form["instructions"]
+    nameOfUser = session['username']
+    new_recipe = {
+        "user": nameOfUser,
+        "image": filename,
+        "title": title,
+        "estimatedTime": estimatedTime,
+        "numServings": numServings,
+        "estimatedCost": estimatedCost,
+        "difficultyLevel": difficultyLevel,
+        "cuisine": cuisine,
+        "description": description,
+        "ingredients": ingredients,
+        "instructions": instructions,
+        "comments":[]
+    }
+
+    db.recipes.insert_one(new_recipe)
+    return redirect(url_for('browse'))
