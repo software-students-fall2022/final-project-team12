@@ -1,4 +1,4 @@
-# from app import test_database, test_username, test_recipeid  # , runsesson, popusername
+from app import test_database, test_username, test_recipeid 
 import json
 import unittest
 import sys

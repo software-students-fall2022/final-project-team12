@@ -46,7 +46,7 @@ except Exception as e:
 # set up the routes
 
 # route for the home page
-@app.route('/')
+@app.route('/')  # done
 def home():
     """
     Route for the home page
@@ -54,7 +54,7 @@ def home():
     return render_template('index.html')  # render the home template
 
 
-@app.route("/login", methods=["POST", "GET"])
+@app.route("/login", methods=["POST", "GET"])  # done
 def login():
     """
         login with registered username
@@ -77,7 +77,7 @@ def login():
         return render_template("login.html", message="")
 
 
-@app.route("/register", methods=["POST", "GET"])
+@app.route("/register", methods=["POST", "GET"])  # done
 def register():
     if request.method == "POST":
         user_name = request.form["username"]
@@ -103,7 +103,7 @@ def register():
         return render_template("register.html")
 
 
-@app.route('/browse')
+@app.route('/browse')  # done
 def browse():
     """
     Route for the home page
@@ -113,7 +113,7 @@ def browse():
     return render_template('browse.html', recipes=recipes)
 
 
-@app.route('/recipe-add')
+@app.route('/recipe-add')  # done
 def recipeAdd():
     """
     Route for the home page
@@ -127,22 +127,23 @@ def recipeDetail(recipe_id):
     Route for GET requests to the edit page.
     Displays a form users can fill out to edit an existing record.
     """
-    user =  db.users.find_one({'username': session["username"]})
+    user = db.users.find_one({'username': session["username"]})
     user_saved = user["saved"]
     if (recipe_id in user_saved):
         isSaved = True
     else:
         isSaved = False
-    
+
     # render the edit template
-    
+
     if request.method == 'POST':
         newcomment = request.form['description']
-        temp = db.recipes.find({"_id":ObjectId(recipe_id)})[0]
+        temp = db.recipes.find({"_id": ObjectId(recipe_id)})[0]
         comments = temp['comments']
-        comments.append({"username":session["username"], "comment":newcomment})
-        db.recipes.update_one({"_id":ObjectId(recipe_id)},
-                              {'$set':{"comments":comments}})
+        comments.append(
+            {"username": session["username"], "comment": newcomment})
+        db.recipes.update_one({"_id": ObjectId(recipe_id)},
+                              {'$set': {"comments": comments}})
     recipe = db.recipes.find_one({"_id": ObjectId(recipe_id)})
     return render_template('recipe-detail.html', r=recipe, isSaved=isSaved)
 
@@ -171,7 +172,7 @@ def EditRecipe(recipe_id):
     ingredients = request.form["ingredients"]
     instructions = request.form["instructions"]
     nameOfUser = session['username']
-    old = db.recipes.find({"_id":ObjectId(recipe_id)})[0]
+    old = db.recipes.find({"_id": ObjectId(recipe_id)})[0]
     updated_recipe = {
         "user": nameOfUser,
         "title": title,
@@ -205,11 +206,15 @@ def recipeDelete(recipe_id):
     Displays a form users can fill out to edit an existing record.
     """
     db.recipes.delete_one({"_id": ObjectId(recipe_id)})
+    for user in db.users.find({}):
+        db.users.update_one({"username": user["username"]},
+                            {"$pull": {"saved": recipe_id}})
+
     return redirect(url_for('myRecipes'))
 
 
 @app.route('/recipe-add', methods=['POST'])
-def addRecipe():
+def addRecipe():  # done
     photo = request.files['image']
     filename = photo.filename
     photo.save('./static/images/'+filename)
@@ -235,7 +240,7 @@ def addRecipe():
         "description": description,
         "ingredients": ingredients,
         "instructions": instructions,
-        "comments":[]
+        "comments": []
     }
 
     db.recipes.insert_one(new_recipe)
@@ -292,7 +297,7 @@ def saveNew():
         recipe_id = request.args.get('recipe_id')
         currUser = db.users.find({"username": session['username']})
         savedItems = currUser[0]['saved']
-        
+
         if (str(recipe_id) not in savedItems):
             savedItems.append(recipe_id)
         else:
@@ -313,6 +318,21 @@ def saveNew():
                                       {"$set": {"found": "0"}})
 
         return render_template('savedRecipes.html', recipes=db.recipes.find({"found": "1"}))
+
+
+# trying testing with mongo
+# change [#] to [0] after cleaning db
+@app.route('/')
+def test_database():
+    return db
+
+@app.route('/')
+def test_username():
+    return db.users.find({})[5]['username']
+
+@app.route('/')
+def test_recipeid():
+    return db.recipes.find_one()['_id']
 
 
 app.secret_key = 'some key that you will never guess'
