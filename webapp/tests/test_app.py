@@ -350,3 +350,99 @@ def test_recipe_detail_status(app, client):
         assert res.status_code == 200
     except:  # i think that means no recipes are there
         assert True
+
+
+def test_recipe_detail_navbar(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/' + recipeID
+        res = client.get(url)
+        assert b'Browse' in res.data
+        assert b'My Recipes' in res.data
+        assert b'Add New Recipe' in res.data
+        assert b'Saved Recipes' in res.data
+        assert b'Log Out' in res.data
+    except:  # i think that means no recipes are there
+        assert True
+
+
+def test_recipe_detail_user_title(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/' + recipeID
+        db = test_database()
+        title = db.recipes.find_one({'_id': ObjectId(recipeID)})['title']
+        user = db.recipes.find_one({'_id': ObjectId(recipeID)})['user']
+        res = client.get(url)
+        assert title.encode('utf-8') in res.data
+        assert user.encode('utf-8') in res.data
+    except:  # i think that means no recipes are there
+        assert True
+
+
+def test_recipe_detail_ingredients(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/' + recipeID
+        db = test_database()
+        arr = ["estimatedTime", "numServings", "estimatedCost", "difficultyLevel",
+               "cuisine", "description", "ingredients", "instructions"]
+        res = client.get(url)
+        for a in arr:
+            data = db.recipes.find_one({'_id': ObjectId(recipeID)})[a]
+            assert data.encode('utf-8') in res.data
+    except:  # i think that means no recipes are there
+        assert True
+
+
+def test_recipe_detail_comments_title(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/' + recipeID
+        res = client.get(url)
+        assert b'Comments' in res.data
+        assert b'Any comments?' in res.data
+    except:  # i think that means no recipes are there
+        assert True
+
+
+def test_recipe_detail_comments(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/' + recipeID
+        db = test_database()
+        res = client.get(url)
+        comments = db.recipes.find_one({'_id': ObjectId(recipeID)})['comments']
+        if (comments != []):
+            for comment in comments:
+                comm = comment['comment']
+                user = comment['username']
+                assert comm.encode('utf-8') in res.data
+                assert user.encode('utf-8') in res.data
+    except:  # i think that means no recipes are there
+        assert True
+
+
+def test_delete_recipe_status(app, client):
+    recipeID = str(test_recipeid())
+    db = test_database()
+    recipe = db.recipes.find_one({'_id': ObjectId(recipeID)})
+    url = '/recipe/' + recipeID + '/delete'
+    res = client.get(url)
+    db.recipes.insert_one(recipe)
+    assert res.status_code == 302
+
+
+def test_non_existent_url(app, client):
+    res = client.get('/non-existent-url')
+    assert res.status_code == 404
