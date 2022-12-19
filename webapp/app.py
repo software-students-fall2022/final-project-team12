@@ -328,7 +328,7 @@ def test_database():
 
 @app.route('/')
 def test_username():
-    return db.users.find({})[5]['username']
+    return db.users.find({})[0]['username']
 
 @app.route('/')
 def test_recipeid():
