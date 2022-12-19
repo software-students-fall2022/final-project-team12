@@ -242,4 +242,111 @@ def test_edit_recipe_navbar(app, client):
     except:  # i think that means no recipes are there
         assert True
 
+def test_my_recipes_title(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    # once this is reached the session was stored
+    recipeID = str(test_recipeid())
+    try:
+        url = '/my-recipes'
+        res = client.get(url)
+        assert b'My Recipes' in res.data
+    except:  # i think that means no recipes are there
+        assert True
 
+
+def test_my_recipes_navbar(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    url = '/my-recipes'
+    res = client.get(url)
+
+    # navbar
+    assert b'Browse' in res.data
+    assert b'My Recipes' in res.data
+    assert b'Add New Recipe' in res.data
+    assert b'Saved Recipes' in res.data
+    assert b'Log Out' in res.data
+    # title
+    assert b'My recipes' in res.data
+
+
+def test_my_recipes_status(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    res = client.get('/my-recipes')
+    assert res.status_code == 200
+
+
+def test_my_recipes_item_peresence(app, client):  # check for items in db
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    db = test_database()
+    usrname = test_username()
+    url = '/my-recipes'
+    res = client.get(url)
+
+    items = db.recipes.find({'user': usrname})
+    for item in items:
+        name = item['title']
+        assert name.encode('utf-8') in res.data
+
+
+def test_saved_recipes_navbar(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+
+    recipeID = str(test_recipeid())
+    url = '/saved-recipes'
+    try:
+        res = client.get(url)
+        assert b'Saved Recipes' in res.data
+        assert b'Browse' in res.data
+        assert b'My Recipes' in res.data
+        assert b'Add New Recipe' in res.data
+        assert b'Saved Recipes' in res.data
+        assert b'Log Out' in res.data
+    except:  # i think that means no recipes are there
+        assert True
+
+
+def test_saved_recipes_status(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    res = client.get('/saved-recipes')
+    assert res.status_code == 200
+
+
+def test_saved_recipes_item_peresence(app, client):  # check for items in db
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    db = test_database()
+    usrname = test_username()
+    url = '/my-recipes'
+    res = client.get(url)
+
+    items = db.users.find_one({'username': usrname})['saved']
+    print(items)
+    for i in items:
+        name = db.recipes.find_one({'_id': ObjectId(i)})['title']
+        assert name.encode('utf-8') in res.data
+#     assert True
+
+
+def test_logout_status(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    res = client.get('/logout')
+    assert res.status_code == 200
+
+
+def test_recipe_detail_status(app, client):
+    with client.session_transaction() as sess:
+        sess['username'] = test_username()
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/'+recipeID
+        res = client.get(url)
+        assert res.status_code == 200
+    except:  # i think that means no recipes are there
+        assert True
