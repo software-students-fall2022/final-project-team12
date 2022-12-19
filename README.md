@@ -23,7 +23,7 @@
 
 - Clone this repository to your local machine
 - Once the docker desktop is installed, make sure you go to the top right corner and click on bug sign to navigate to **RESET TO FACTORY DEFAULTS**. This will reset Docker and prompt Docker to restart. Please make sure you do this step before running the files from github repository because the docker does not create right images sometimes (you won't always have to do this, but do it just in case).
-- Go to the root folder (final-project-team12) and run the following command
+- Go to the root folder (final-project-team12) and run the following command:
     ```
     docker-compose up
     ```
