@@ -1,0 +1,141 @@
+{% extends 'base.html'%} {% block content%}
+<nav class="navbar navbar-expand-sm navbar-dark">
+    <div class="container navcolor">
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#n_bar"
+            aria-controls="navbarNavAltMarkup"
+            aria-label="Toggle navigation"
+        >
+            <span class="navbar-toggler-icon navcolor"></span>
+        </button>
+        <div
+            class="collapse navbar-collapse navcolor justify-content-center"
+            id="n_bar"
+        >
+            <ul class="navbar-nav justify-content-center">
+                <li class="nav-item active">
+                    <a
+                        class="nav-link navcolor text-light"
+                        href="{{ url_for('browse')}}"
+                        >Browse</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link navcolor text-light"
+                        href="{{ url_for('myRecipes')}}"
+                        >My Recipes</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link navcolor text-light"
+                        href="{{ url_for('recipeAdd')}}"
+                        >Add New Recipe</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link navcolor text-light"
+                        href="{{ url_for('savedRecipes')}}"
+                        >Saved Recipes</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link navcolor text-light"
+                        href="{{ url_for('logout')}}"
+                        >Log Out</a
+                    >
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="text-center p-4">
+    <h2 class="sameline">{{r.title}} - posted by {{r.user}}</h2>
+    <h5 class="color-purple">{{r.description}}</h5>
+    <br />
+    <div>
+        <img
+            src="../static/images/{{r.image}}"
+            height="220px"
+            alt="This is the recipe image"
+        />
+    </div>
+    <br />
+    <div>
+        <a class="bolded text-dark">Estimated Time: </a>{{r.estimatedTime}}
+        minutes
+    </div>
+    <br />
+    <div>
+        <a class="bolded text-dark">Number of Servings: </a>{{r.numServings}}
+    </div>
+    <br />
+    <div>
+        <a class="bolded text-dark">Estimated Cost: </a>${{r.estimatedCost}}
+    </div>
+    <br />
+    <div>
+        <a class="bolded text-dark">Difficulty Level: </a>{{r.difficultyLevel}}
+    </div>
+    <br />
+    <div><a class="bolded text-dark">Cuisine: </a>{{r.cuisine}}</div>
+    <br />
+    <div><a class="bolded text-dark">Ingredients: </a>{{r.ingredients}}</div>
+    <br />
+    <div><a class="bolded text-dark">Instructions: </a>{{r.instructions}}</div>
+    <br />
+
+    <h3>Comments</h3>
+    <ul>
+        {% for c in r.comments %}
+        <li><a class="bolded text-dark">{{c.username}}:</a> {{c.comment}}</li>
+        {% endfor %}
+    </ul>
+
+    <div
+        class="row h-100 justify-content-center align-items-center text-center"
+    >
+        <div class="col-10 col-md-8 col-lg-3">
+            <form method="POST" action="">
+                <div class="form-group">
+                    <label for="description" class="pb-2 bolded"
+                        >Any comments?</label
+                    ><br />
+                    <input
+                        type="text"
+                        id="description"
+                        class="form-control"
+                        name="description"
+                        value=""
+                        placeholder="Add comment"
+                    />
+                </div>
+                <br />
+                <div class="form-input pb-3">
+                    <input
+                        type="submit"
+                        value="Add"
+                        class="btn btn-outline-success"
+                    />
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form action="../saveRecipe" method="GET">
+        <input type="hidden" id="objID" name="recipe_id" value="{{r._id}}" />
+        {% if isSaved %}
+        <button class="btn btn-danger" type="submit">Unsave Recipe</button>
+        {% else %}
+        <button class="btn btn-success" type="submit">Save Recipe</button>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

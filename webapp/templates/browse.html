@@ -1,0 +1,41 @@
+ {% extends 'base.html'%} {% block content%}
+<nav class="navbar navbar-expand-sm navbar-dark">
+    <div class="container navcolor">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#n_bar" aria-controls="navbarNavAltMarkup" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon navcolor"></span>
+            </button>
+        <div class="collapse navbar-collapse navcolor justify-content-center" id="n_bar">
+            <ul class="navbar-nav justify-content-center">
+                <li class="nav-item active"><a class="navli nav-link navcolor text-light" href="{{ url_for('browse')}}">Browse</a></li>
+                <li class="nav-item"><a class="navli nav-link navcolor text-light" href="{{ url_for('myRecipes')}}">My Recipes</a></li>
+                <li class="nav-item"><a class="navli nav-link navcolor text-light" href="{{ url_for('recipeAdd')}}">Add New Recipe</a></li>
+                <li class="nav-item"><a class="navli nav-link navcolor text-light" href="{{ url_for('savedRecipes')}}">Saved Recipes</a></li>
+                <li class="nav-item"><a class="navli nav-link navcolor text-light" href="{{ url_for('logout')}}">Log Out</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="main">
+    <h2 class="pt-3 text-center">Posted recipes</h2>
+    <ol class="pt-3">
+        {% for r in recipes %}
+        <li class="pb-3">
+            <a class="bolded text-dark">{{r.title}}</a> - {{r.description}}<br>
+            <div class="py-2">
+                <div class="browsing-image">
+                    <img src="static/images/{{r.image}}" class="rounded browse-image">
+                </div>
+                <div class="browsing-text">
+                    Time commitment - {{r.estimatedTime}} minutes<br> Estimated Cost - ${{r.estimatedCost}}<br> Difficulty Level - {{r.difficultyLevel}}<br> Cuisine - {{r.cuisine}}
+                </div>
+            </div>
+            <div>
+                <a class="btn btn-primary" href="{{ url_for('recipeDetail', recipe_id=r._id)}}">details</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ol>
+    <br>
+</div>
+{% endblock %}
