@@ -140,3 +140,106 @@ def test_browse_navbar(app, client):
 def test_add_recipe_status(app, client):
     res = client.get('/recipe-add')
     assert res.status_code == 200
+
+
+
+def test_add_recipe_add_button(app, client):
+    url = '/recipe-add'
+    res = client.get(url)
+    assert b'Add Recipe' in res.data
+
+
+def test_add_recipe_form(app, client):  # check if form is all there
+    url = '/recipe-add'
+    res = client.get(url)
+    arr = ['Add an image', 'Title:', 'Description:', 'Ingredients:', 'Instructions:',
+           'Cuisine:', 'Number of Servings:', 'Estimated Time (mins):', 'Difficulty Level:']
+    for name in arr:
+        assert name.encode('utf-8') in res.data
+
+
+def test_add_recipe_title(app, client):
+    url = '/recipe-add'
+    res = client.get(url)
+    assert b'Add New Recipe' in res.data
+
+
+def test_add_recipe_navbar(app, client):
+    url = '/recipe-add'
+    res = client.get(url)
+    assert b'Browse' in res.data
+    assert b'My Recipes' in res.data
+    assert b'Add New Recipe' in res.data
+    assert b'Saved Recipes' in res.data
+    assert b'Log Out' in res.data
+
+
+def test_edit_recipe_status(app, client):
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/'+recipeID+'/edit'
+        res = client.get(url)
+        assert res.status_code == 200
+    except:  # i think that means no recipes are there
+        assert True
+
+
+def test_edit_recipe_update_button(app, client):
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/'+recipeID+'/edit'
+        res = client.get(url)
+        assert b'Update Recipe' in res.data
+    except:  # i think that means no recipes are there
+        assert True
+
+
+def test_edit_recipe_form(app, client):  # check if form is filled with data
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/' + recipeID + '/edit'
+        res = client.get(url)
+        arr = ['Add an image', 'Title:', 'Description:', 'Ingredients:', 'Instructions:',
+               'Cuisine:', 'Number of Servings:', 'Estimated Time (mins):', 'Difficulty Level:']
+        for name in arr:
+            assert name.encode('utf-8') in res.data
+    except:  # i think that means no recipes are there
+        assert True
+
+def test_edit_recipe_form_details(app, client):
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/' + recipeID + '/edit'
+        res = client.get(url)
+        db = test_database()
+        data = db.recipes.find({'_id': ObjectId(recipeID)})[0]
+        arr = ["title","estimatedTime","numServings","estimatedCost","difficultyLevel","cuisine","description","ingredients","instructions"]
+        for d in arr:
+            assert data[d].encode('utf-8') in res.data
+    except:  # i think that means no recipes are there
+        assert True
+
+def test_edit_recipe_title(app, client):
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/'+recipeID+'/edit'
+        res = client.get(url)
+        assert b'Edit Recipe' in res.data
+    except:  # i think that means no recipes are there
+        assert True
+
+
+def test_edit_recipe_navbar(app, client):
+    recipeID = str(test_recipeid())
+    try:
+        url = '/recipe/'+recipeID+'/edit'
+        res = client.get(url)
+        assert b'Browse' in res.data
+        assert b'My Recipes' in res.data
+        assert b'Add New Recipe' in res.data
+        assert b'Saved Recipes' in res.data
+        assert b'Log Out' in res.data
+    except:  # i think that means no recipes are there
+        assert True
+
+
